@@ -39,13 +39,13 @@ func sendChatMessage(w http.ResponseWriter, req *http.Request) {
 	apiKey := "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"
 
 	var incomingMessages []Message
-	log.Print(req.Body)
 	err := json.NewDecoder(req.Body).Decode(&incomingMessages)
 	if err != nil {
 		http.Error(w, "Error reading request body", http.StatusBadRequest)
 		return
 	}
 
+	log.Printf("%v", incomingMessages)
 	body := OpenAiRequestBody{
 		Model:    "gpt-4-turbo-preview", // Update if needed with the correct model
 		Messages: incomingMessages,
