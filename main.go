@@ -38,9 +38,16 @@ func sendChatMessage(w http.ResponseWriter, req *http.Request) {
 	url := "https://api.openai.com/v1/chat/completions"
 	apiKey := ""
 
+	var incomingMessages []Message
+	err := json.NewDecoder(req.Body).Decode(&incomingMessages)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusBadRequest)
+		return
+	}
+
 	body := OpenAiRequestBody{
-		Model:    "gpt-4-turbo-preview",
-		Messages: []Message{},
+		Model:    "gpt-4-turbo-preview", // Update if needed with the correct model
+		Messages: incomingMessages,
 		Stream:   true,
 	}
 
