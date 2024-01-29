@@ -3,13 +3,15 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 )
 
 func sendChatMessage(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, x-sveltekit-action")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	if req.Method != http.MethodPost {
+		http.Error(w, "Unsupported method.", http.StatusMethodNotAllowed)
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Print(req)
 	w.WriteHeader(http.StatusOK)
@@ -18,12 +20,29 @@ func sendChatMessage(w http.ResponseWriter, req *http.Request) {
 	}{
 		Message: "Hello json",
 	}
-	json.NewEncoder(w).Encode(response)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		log.Fatalf("Error starting server: $s", err)
+	}
+}
+
+func corsMiddleware(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, x-sveltekit-action")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		if r.Method == http.MethodOptions {
+			return
+		}
+		handler.ServeHTTP(w, r)
+	})
 }
 
 func main() {
-	http.HandleFunc("/chat", sendChatMessage)
+	multiplexer := http.NewServeMux()
+	multiplexer.HandleFunc("/chat", sendChatMessage)
+	// Wrap the http handler in cors middle ware
+	handlerWithCors := corsMiddleware(multiplexer)
 
 	fmt.Printf("listening on port {8080}")
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8080", handlerWithCors)
 }
