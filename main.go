@@ -36,9 +36,10 @@ func sendChatMessage(w http.ResponseWriter, req *http.Request) {
 	}
 
 	url := "https://api.openai.com/v1/chat/completions"
-	apiKey := ""
+	apiKey := "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"
 
 	var incomingMessages []Message
+	log.Print(req.Body)
 	err := json.NewDecoder(req.Body).Decode(&incomingMessages)
 	if err != nil {
 		http.Error(w, "Error reading request body", http.StatusBadRequest)
