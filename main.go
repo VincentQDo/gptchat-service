@@ -12,8 +12,10 @@ func sendChatMessage(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Unsupported method.", http.StatusMethodNotAllowed)
 	}
 
+	// Set the headers here
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Print(req)
+
+	// WriteHeader will return the correct status
 	w.WriteHeader(http.StatusOK)
 	response := struct {
 		Message string `json:"message"`
@@ -21,7 +23,7 @@ func sendChatMessage(w http.ResponseWriter, req *http.Request) {
 		Message: "Hello json",
 	}
 	if err := json.NewEncoder(w).Encode(response); err != nil {
-		log.Fatalf("Error starting server: $s", err)
+		log.Fatalf("Error starting server: %s", err)
 	}
 }
 
